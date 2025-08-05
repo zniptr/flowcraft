@@ -1,32 +1,41 @@
 package chartmanager
 
 import (
+	"errors"
+
 	"github.com/zniptr/flowcraft/internal/chart"
+	"github.com/zniptr/flowcraft/internal/chartinstance"
+	"github.com/zniptr/flowcraft/internal/file"
 	"github.com/zniptr/flowcraft/internal/filereader"
 	"github.com/zniptr/flowcraft/internal/helpers"
 	"github.com/zniptr/flowcraft/internal/xmlparser"
+	"github.com/zniptr/flowcraft/pkg/chartcontext"
 )
 
-type chartManager interface {
+type ChartManager interface {
 	LoadCharts(path string) error
+	StartChartInstance(name string, context map[string]any) error
+	storeCharts(diagrams []file.Diagram)
 }
 
 type chartManagerImpl struct {
-	charts     map[string]chart.Diagram
+	charts     map[string]chart.Chart
 	fileReader filereader.FileReader
 	xmlParser  xmlparser.XmlParser
 }
 
 var (
-	newChartFileReaderFunc = filereader.NewFileReader(helpers.NewOsHelper(), helpers.NewFilepathHelper())
-	newChartXmlParserFunc  = xmlparser.NewXmlParser(helpers.NewXmlHelper())
+	newChartFileReaderFunc = filereader.NewFileReader
+	newChartXmlParserFunc  = xmlparser.NewXmlParser
+	newChartContextFunc    = chartcontext.NewChartContext
+	newChartInstanceFunc   = chartinstance.NewChartInstance
 )
 
-func NewChartManager() chartManager {
+func NewChartManager() ChartManager {
 	return &chartManagerImpl{
-		charts:     make(map[string]chart.Diagram),
-		fileReader: newChartFileReaderFunc,
-		xmlParser:  newChartXmlParserFunc,
+		charts:     make(map[string]chart.Chart),
+		fileReader: newChartFileReaderFunc(helpers.NewOsHelper(), helpers.NewFilepathHelper()),
+		xmlParser:  newChartXmlParserFunc(helpers.NewXmlHelper()),
 	}
 }
 
@@ -61,13 +70,31 @@ func (manager *chartManagerImpl) parseChart(file helpers.DirEntryHelper, path st
 		return err
 	}
 
-	manager.storeDiagrams(diagrams)
+	manager.storeCharts(diagrams)
 
 	return nil
 }
 
-func (manager *chartManagerImpl) storeDiagrams(diagrams []chart.Diagram) {
+func (manager *chartManagerImpl) storeCharts(diagrams []file.Diagram) {
 	for _, diagram := range diagrams {
-		manager.charts[diagram.Id] = diagram
+		manager.charts[diagram.Name] = chart.NewChart(diagram)
 	}
+}
+
+func (manager *chartManagerImpl) StartChartInstance(name string, context map[string]any) error {
+	chart := manager.charts[name]
+
+	if chart == nil {
+		return errors.New("chart not found")
+	}
+
+	chartContext := newChartContextFunc(context)
+	chartInstance := newChartInstanceFunc(chartContext, chart)
+
+	err := chartInstance.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -1,36 +1,49 @@
 package chart
 
-import "encoding/xml"
+import "github.com/zniptr/flowcraft/internal/file"
 
-type ChartFile struct {
-	XMLName  xml.Name  `xml:"mxfile"`
-	Diagrams []Diagram `xml:"diagram"`
+type Chart interface {
+	GetStart() *file.Object
+	GetObjectById(id string) *file.Object
+	GetSingleConnectionBySourceId(id string) *file.Object
 }
 
-type Diagram struct {
-	XMLName xml.Name `xml:"diagram"`
-	Id      string   `xml:"id,attr"`
-	Name    string   `xml:"name,attr"`
-	Graph   Graph    `xml:"mxGraphModel"`
+type ChartImpl struct {
+	diagram file.Diagram
 }
 
-type Graph struct {
-	XMLName xml.Name `xml:"mxGraphModel"`
-	Root    Root     `xml:"root"`
+func NewChart(diagram file.Diagram) Chart {
+	return &ChartImpl{
+		diagram: diagram,
+	}
 }
 
-type Root struct {
-	XMLName xml.Name `xml:"root"`
-	Objects []Object `xml:"object"`
+func (chart *ChartImpl) GetStart() *file.Object {
+	for _, object := range chart.diagram.Graph.Root.Objects {
+		if object.Type == "start" {
+			return &object
+		}
+	}
+
+	return nil
 }
 
-type Object struct {
-	XMLName    xml.Name `xml:"object"`
-	Id         string   `xml:"id,attr"`
-	Label      string   `xml:"label,attr"`
-	Type       string   `xml:"type,attr"`
-	Condition  string   `xml:"condition,attr"`
-	Default    string   `xml:"Default,attr"`
-	Executable string   `xml:"executable,attr"`
-	Link       string   `xml:"link,attr"`
+func (chart *ChartImpl) GetObjectById(id string) *file.Object {
+	for _, object := range chart.diagram.Graph.Root.Objects {
+		if object.Id == id {
+			return &object
+		}
+	}
+
+	return nil
+}
+
+func (chart *ChartImpl) GetSingleConnectionBySourceId(id string) *file.Object {
+	for _, object := range chart.diagram.Graph.Root.Objects {
+		if object.Type == "connection" && object.Cell.Source == id {
+			return &object
+		}
+	}
+
+	return nil
 }

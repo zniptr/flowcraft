@@ -6,15 +6,16 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/zniptr/flowcraft/internal/chart"
+	"github.com/zniptr/flowcraft/internal/file"
 	"github.com/zniptr/flowcraft/internal/mocks"
 )
 
 type XmlParserTestSuite struct {
 	suite.Suite
-	mockData  []byte
-	mockError error
-	mockChart chart.ChartFile
+	mockData    []byte
+	mockError   error
+	mockFile    file.File
+	mockDiagram file.Diagram
 
 	mockXmlHelper *mocks.XmlHelperMock
 }
@@ -22,7 +23,8 @@ type XmlParserTestSuite struct {
 func (suite *XmlParserTestSuite) SetupTest() {
 	suite.mockData = []byte{}
 	suite.mockError = errors.New("A general error has occurred")
-	suite.mockChart = chart.ChartFile{Diagrams: []chart.Diagram{{Id: "123"}}}
+	suite.mockDiagram = file.Diagram{}
+	suite.mockFile = file.File{Diagrams: []file.Diagram{suite.mockDiagram}}
 
 	suite.mockXmlHelper = mocks.NewXmlHelperMock()
 }
@@ -35,7 +37,7 @@ func (suite *XmlParserTestSuite) TestNewXmlParser_whenCreateXmlParser_thenReturn
 }
 
 func (suite *XmlParserTestSuite) TestParseDiagrams_whenErrorOnUnmarshal_thenReturnError() {
-	suite.mockXmlHelper.On("Unmarshal", suite.mockData, mock.AnythingOfType("*chart.ChartFile")).Return(suite.mockError)
+	suite.mockXmlHelper.On("Unmarshal", suite.mockData, mock.AnythingOfType("*file.File")).Return(suite.mockError)
 
 	diagrams, err := NewXmlParser(suite.mockXmlHelper).ParseDiagrams(suite.mockData)
 
@@ -45,16 +47,16 @@ func (suite *XmlParserTestSuite) TestParseDiagrams_whenErrorOnUnmarshal_thenRetu
 }
 
 func (suite *XmlParserTestSuite) TestParseDiagrams_whenParseValidChartFile_thenReturnParsedDiagrams() {
-	suite.mockXmlHelper.On("Unmarshal", suite.mockData, mock.AnythingOfType("*chart.ChartFile")).
+	suite.mockXmlHelper.On("Unmarshal", suite.mockData, mock.AnythingOfType("*file.File")).
 		Run(func(args mock.Arguments) {
-			entry := args.Get(1).(*chart.ChartFile)
-			*entry = suite.mockChart
+			entry := args.Get(1).(*file.File)
+			*entry = suite.mockFile
 		}).
 		Return(nil)
 
 	diagrams, err := NewXmlParser(suite.mockXmlHelper).ParseDiagrams(suite.mockData)
 
-	suite.Equal(suite.mockChart.Diagrams[0], diagrams[0])
+	suite.Equal(suite.mockFile.Diagrams[0], diagrams[0])
 	suite.Nil(err)
 	mock.AssertExpectationsForObjects(suite.T())
 }
