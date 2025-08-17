@@ -8,4 +8,5 @@ github.com/zniptr/flowcraft/internal/xmlparser \
 github.com/zniptr/flowcraft/internal/chartinstance \
 github.com/zniptr/flowcraft/internal/actions \
 github.com/zniptr/flowcraft/internal/chart \
+github.com/zniptr/flowcraft/internal/gojaexecutor \
 && go tool cover -html=coverage.out -o coverage.html

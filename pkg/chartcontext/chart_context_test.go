@@ -32,6 +32,12 @@ func (suite *ChartContextTestSuite) TestNewChartContext_whenCreateChartContext_t
 	suite.IsType(&chartContextImpl{}, chartContext)
 }
 
+func (suite *ChartContextTestSuite) TestGetContext_whenGetContext_thenReturnContext() {
+	context := NewChartContext(suite.mockContext).GetContext()
+
+	suite.Equal(suite.mockContext, context)
+}
+
 func (suite *ChartContextTestSuite) TestGetVariable_whenGetUnknownVariable_thenReturnNil() {
 	variable := NewChartContext(suite.mockContext).GetVariable(suite.mockUnknownVariableName)
 

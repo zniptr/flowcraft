@@ -19,16 +19,19 @@ func (action *StartAction) Execute(chartContext chartcontext.ChartContext, chart
 }
 
 func (action *StartAction) GetNext(chartContext chartcontext.ChartContext, chart chart.Chart, object *file.Object) (*file.Object, error) {
-	connection := chart.GetSingleConnectionBySourceId(object.Id)
+	connection := chart.GetOutgoingConnection(object.Id)
 
 	if connection == nil {
 		return nil, fmt.Errorf("no source connection for start action %s", object.Label)
 	}
 
-	target := chart.GetObjectById(connection.Cell.Target)
-	if target == nil {
-		return nil, fmt.Errorf("no target for connection action %s", connection.Label)
-	}
+	return action.resolveTarget(chart, connection)
+}
 
+func (action *StartAction) resolveTarget(chart chart.Chart, connection *file.Object) (*file.Object, error) {
+	target := chart.GetObject(connection.Cell.Target)
+	if target == nil {
+		return nil, fmt.Errorf("no target object found for connection %s", connection.Label)
+	}
 	return target, nil
 }

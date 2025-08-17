@@ -10,6 +10,12 @@ func NewChartContextMock() *ChartContextMock {
 	return &ChartContextMock{}
 }
 
+func (mock *ChartContextMock) GetContext() map[string]any {
+	args := mock.Called()
+
+	return args.Get(0).(map[string]any)
+}
+
 func (mock *ChartContextMock) GetVariable(name string) any {
 	args := mock.Called(name)
 

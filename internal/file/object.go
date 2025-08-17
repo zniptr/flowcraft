@@ -8,7 +8,7 @@ type Object struct {
 	Label      string   `xml:"label,attr"`
 	Type       string   `xml:"type,attr"`
 	Condition  string   `xml:"condition,attr"`
-	Default    string   `xml:"Default,attr"`
+	Default    string   `xml:"default,attr"`
 	Executable string   `xml:"executable,attr"`
 	Link       string   `xml:"link,attr"`
 	Cell       Cell     `xml:"mxCell"`

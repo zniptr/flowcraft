@@ -1,11 +1,15 @@
 package chart
 
-import "github.com/zniptr/flowcraft/internal/file"
+import (
+	"github.com/zniptr/flowcraft/internal/file"
+)
 
 type Chart interface {
 	GetStart() *file.Object
-	GetObjectById(id string) *file.Object
-	GetSingleConnectionBySourceId(id string) *file.Object
+	GetObject(id string) *file.Object
+	GetOutgoingConnection(id string) *file.Object
+	GetOutgoingNonDefaultConnections(id string) []*file.Object
+	GetOutgoingDefaultConnection(id string) *file.Object
 }
 
 type ChartImpl struct {
@@ -28,7 +32,7 @@ func (chart *ChartImpl) GetStart() *file.Object {
 	return nil
 }
 
-func (chart *ChartImpl) GetObjectById(id string) *file.Object {
+func (chart *ChartImpl) GetObject(id string) *file.Object {
 	for _, object := range chart.diagram.Graph.Root.Objects {
 		if object.Id == id {
 			return &object
@@ -38,9 +42,31 @@ func (chart *ChartImpl) GetObjectById(id string) *file.Object {
 	return nil
 }
 
-func (chart *ChartImpl) GetSingleConnectionBySourceId(id string) *file.Object {
+func (chart *ChartImpl) GetOutgoingConnection(id string) *file.Object {
 	for _, object := range chart.diagram.Graph.Root.Objects {
 		if object.Type == "connection" && object.Cell.Source == id {
+			return &object
+		}
+	}
+
+	return nil
+}
+
+func (chart *ChartImpl) GetOutgoingNonDefaultConnections(id string) []*file.Object {
+	objects := []*file.Object{}
+
+	for _, object := range chart.diagram.Graph.Root.Objects {
+		if object.Type == "connection" && object.Cell.Source == id && object.Default != "1" {
+			objects = append(objects, &object)
+		}
+	}
+
+	return objects
+}
+
+func (chart *ChartImpl) GetOutgoingDefaultConnection(id string) *file.Object {
+	for _, object := range chart.diagram.Graph.Root.Objects {
+		if object.Type == "connection" && object.Cell.Source == id && object.Default == "1" {
 			return &object
 		}
 	}

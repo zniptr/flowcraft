@@ -30,7 +30,7 @@ func (mock *ChartMock) GetStart() *file.Object {
 	return args.Get(0).(*file.Object)
 }
 
-func (mock *ChartMock) GetObjectById(id string) *file.Object {
+func (mock *ChartMock) GetObject(id string) *file.Object {
 	args := mock.Called(id)
 
 	result := args.Get(0)
@@ -41,7 +41,24 @@ func (mock *ChartMock) GetObjectById(id string) *file.Object {
 	return args.Get(0).(*file.Object)
 }
 
-func (mock *ChartMock) GetSingleConnectionBySourceId(id string) *file.Object {
+func (mock *ChartMock) GetOutgoingConnection(id string) *file.Object {
+	args := mock.Called(id)
+
+	result := args.Get(0)
+	if result == nil {
+		return nil
+	}
+
+	return args.Get(0).(*file.Object)
+}
+
+func (mock *ChartMock) GetOutgoingNonDefaultConnections(id string) []*file.Object {
+	args := mock.Called(id)
+
+	return args.Get(0).([]*file.Object)
+}
+
+func (mock *ChartMock) GetOutgoingDefaultConnection(id string) *file.Object {
 	args := mock.Called(id)
 
 	result := args.Get(0)

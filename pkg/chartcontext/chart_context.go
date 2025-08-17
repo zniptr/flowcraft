@@ -3,6 +3,7 @@ package chartcontext
 type ChartContext interface {
 	GetVariable(name string) any
 	SetVariable(name string, value any)
+	GetContext() map[string]any
 }
 
 type chartContextImpl struct {
@@ -13,6 +14,10 @@ func NewChartContext(context map[string]any) ChartContext {
 	return &chartContextImpl{
 		context: context,
 	}
+}
+
+func (context *chartContextImpl) GetContext() map[string]any {
+	return context.context
 }
 
 func (context *chartContextImpl) GetVariable(name string) any {

@@ -84,7 +84,7 @@ func (suite *ProcessActionTestSuite) TestProcessActionExecute_whenExecute_thenRe
 }
 
 func (suite *ProcessActionTestSuite) TestProcessActionGetNext_whenNoConnection_thenReturnError() {
-	suite.mockChart.On("GetSingleConnectionBySourceId", suite.mockId).Return(nil)
+	suite.mockChart.On("GetOutgoingConnection", suite.mockId).Return(nil)
 
 	next, err := NewProcessAction().GetNext(suite.mockChartContext, suite.mockChart, suite.mockObject)
 
@@ -94,19 +94,19 @@ func (suite *ProcessActionTestSuite) TestProcessActionGetNext_whenNoConnection_t
 }
 
 func (suite *ProcessActionTestSuite) TestProcessActionGetNext_whenConnectionHasNoTarget_thenReturnError() {
-	suite.mockChart.On("GetSingleConnectionBySourceId", suite.mockId).Return(suite.mockConnectionObject)
-	suite.mockChart.On("GetObjectById", suite.mockTargetId).Return(nil)
+	suite.mockChart.On("GetOutgoingConnection", suite.mockId).Return(suite.mockConnectionObject)
+	suite.mockChart.On("GetObject", suite.mockTargetId).Return(nil)
 
 	next, err := NewProcessAction().GetNext(suite.mockChartContext, suite.mockChart, suite.mockObject)
 
 	suite.Nil(next)
-	suite.EqualError(err, fmt.Sprintf("no target for connection action %s", suite.mockConnectionObject.Label))
+	suite.EqualError(err, fmt.Sprintf("no target object found for connection %s", suite.mockConnectionObject.Label))
 	mock.AssertExpectationsForObjects(suite.T())
 }
 
 func (suite *ProcessActionTestSuite) TestProcessActionGetNext_whenNextFound_thenReturnNext() {
-	suite.mockChart.On("GetSingleConnectionBySourceId", suite.mockId).Return(suite.mockConnectionObject)
-	suite.mockChart.On("GetObjectById", suite.mockTargetId).Return(suite.mockNextObject)
+	suite.mockChart.On("GetOutgoingConnection", suite.mockId).Return(suite.mockConnectionObject)
+	suite.mockChart.On("GetObject", suite.mockTargetId).Return(suite.mockNextObject)
 
 	next, err := NewProcessAction().GetNext(suite.mockChartContext, suite.mockChart, suite.mockObject)
 
